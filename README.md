@@ -1,4 +1,4 @@
-# Third Eye Shield -- Privacy-Preserving AI for Multimodal Remote Elderly Wellness Monitoring
+# Third Eye Shield - Privacy-Preserving AI for Multimodal Remote Elderly Wellness Monitoring
 
 > Depth-first, edge-deployed, multilingual wellness monitor for elderly individuals living alone in Singapore.
 
