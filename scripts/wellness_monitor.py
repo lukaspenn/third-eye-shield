@@ -32,31 +32,9 @@ import signal, sys, time, pickle, collections, select, termios, tty, os
 from pathlib import Path
 from datetime import datetime
 
-# Kill any previous instance that holds the RealSense camera
-def _kill_previous():
-    my_pid = os.getpid()
-    scripts = ('wellness_monitor.py', 'touchscreen_launcher.py',
-               'rule_based_demo_depth_overlay.py', 'science_fair_showcase.py')
-    import subprocess
-    try:
-        out = subprocess.check_output(['ps', 'aux'], text=True)
-        for line in out.splitlines():
-            if not any(s in line for s in scripts):
-                continue
-            parts = line.split()
-            pid = int(parts[1])
-            if pid == my_pid:
-                continue
-            try:
-                os.kill(pid, signal.SIGTERM)
-                print(f"[INIT] Killed previous instance (PID {pid})")
-                time.sleep(0.5)
-            except ProcessLookupError:
-                pass
-    except Exception:
-        pass
-
-_kill_previous()
+sys.path.append(str(Path(__file__).resolve().parents[1]))
+from src.utils.process import kill_previous_instances
+kill_previous_instances()
 
 import numpy as np
 try:
@@ -84,13 +62,14 @@ except Exception as _e:
     rs = None
     _RS_IMPORT_ERROR = _e
 
-sys.path.append(str(Path(__file__).resolve().parents[1]))
 from src.utils.kinematics import extract_kinematic_features
 from src.utils.wellness_features import (
     PostureTracker, SedentaryTracker, compute_wellness_level,
     WELLNESS_NAMES, WELLNESS_COLORS_BGR, ACTIVE_ACTIONS, ALERT_ACTIONS,
     WELLNESS_ACTIVE, WELLNESS_NORMAL, WELLNESS_SEDENTARY, WELLNESS_CONCERN, WELLNESS_ALERT,
 )
+from src.utils.skeleton import MOVENET_BONES, JOINT_CONF_THR, JointSmoother, draw_skeleton
+from src.utils.autoencoder import DepthAutoencoder
 
 sys.stdout.reconfigure(line_buffering=True)
 
@@ -101,73 +80,6 @@ signal.signal(signal.SIGINT,  _stop)
 signal.signal(signal.SIGTERM, _stop)
 
 W, H = 800, 480
-
-# MoveNet 17-joint bones
-MOVENET_BONES = [
-    (0, 1), (0, 2), (1, 3), (2, 4),
-    (0, 5), (0, 6),
-    (5, 7), (7, 9), (6, 8), (8, 10),
-    (5, 6), (5, 11), (6, 12), (11, 12),
-    (11, 13), (13, 15), (12, 14), (14, 16),
-]
-JOINT_CONF_THR = 0.25
-
-
-class JointSmoother:
-    """Per-joint EMA to reduce MoveNet quantisation jitter."""
-    def __init__(self, alpha: float = 0.55):
-        self.alpha = alpha
-        self._prev = None
-
-    def __call__(self, kps: np.ndarray) -> np.ndarray:
-        out = kps.copy()
-        if self._prev is None:
-            self._prev = kps[:, :2].copy()
-        else:
-            out[:, :2] = self.alpha * kps[:, :2] + (1 - self.alpha) * self._prev
-            visible = kps[:, 2] > JOINT_CONF_THR
-            self._prev[visible] = out[visible, :2]
-        return out
-
-    def reset(self):
-        self._prev = None
-
-
-def draw_skeleton_movenet(img, keypoints):
-    """Draw MoveNet 17-joint skeleton. keypoints: (17,3) = [x_px, y_px, conf]."""
-    ih, iw = img.shape[:2]
-    def px(i):
-        x, y = int(keypoints[i, 0]), int(keypoints[i, 1])
-        return (max(0, min(x, iw-1)), max(0, min(y, ih-1)))
-    for a, b in MOVENET_BONES:
-        if keypoints[a, 2] > JOINT_CONF_THR and keypoints[b, 2] > JOINT_CONF_THR:
-            cv2.line(img, px(a), px(b), (0, 0, 0),        7)
-            cv2.line(img, px(a), px(b), (255, 255, 255),   3)
-    for j in range(17):
-        if keypoints[j, 2] > JOINT_CONF_THR:
-            p = px(j)
-            r = 8 if j == 0 else 5
-            cv2.circle(img, p, r+2, (0, 0, 0),  -1)
-            cv2.circle(img, p, r,   (0, 0, 255), -1)
-
-
-class AE:
-    """Depth autoencoder TFLite wrapper."""
-    def __init__(self, path, size=(64,64)):
-        self.size = size
-        it = tf.lite.Interpreter(model_path=str(path))
-        it.allocate_tensors()
-        self.it = it
-        self.inp = it.get_input_details()[0]['index']
-        self.out = it.get_output_details()[0]['index']
-
-    def mse(self, raw):
-        d = cv2.resize(raw, self.size, interpolation=cv2.INTER_AREA).astype(np.float32)
-        d = np.clip((d-100)/9900.0, 0, 1)[None,...,None]
-        self.it.set_tensor(self.inp, d)
-        self.it.invoke()
-        rec = self.it.get_tensor(self.out)[0,...,0]
-        return float(np.mean((d[0,...,0]-rec)**2))
 
 
 def main():
@@ -303,7 +215,7 @@ def main():
         sz = tuple(s1.get('input_size', [64, 64]))
         if mp.exists():
             print(f"[INIT] AE: {mp.name}  threshold={ae_thr:.4f}")
-            ae = AE(mp, sz)
+            ae = DepthAutoencoder(mp, sz)
     except Exception as e:
         print(f"[INIT] AE disabled: {e}")
 
@@ -527,7 +439,7 @@ def main():
             kps_disp[:, 1] *= sy
             n_j = int(np.sum(kps[:, 2] > JOINT_CONF_THR))
             if n_j >= 5:
-                draw_skeleton_movenet(disp, kps_disp)
+                draw_skeleton(disp, kps_disp)
 
             # --- Posture tracking (every frame with good skeleton) --------
             if n_j >= 5:

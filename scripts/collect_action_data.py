@@ -26,6 +26,7 @@ import pyrealsense2 as rs
 
 sys.path.append(str(Path(__file__).resolve().parents[1]))
 from src.utils.kinematics import extract_kinematic_features
+from src.utils.skeleton import MOVENET_BONES, JOINT_CONF_THR, JointSmoother, draw_skeleton
 
 # ── The 10 Selected Actions ──────────────────────────────────────────────
 ACTIONS = {
@@ -43,61 +44,13 @@ ACTIONS = {
 
 W, H = 800, 480
 SEQ_LEN = 32       # frames per clip (~1 second at 30 FPS, matches TCN input)
-CONF_THR = 0.25    # joint confidence threshold
 MIN_JOINTS = 5     # minimum visible joints to accept a frame
-
-# MoveNet 17-joint bones for skeleton drawing
-MOVENET_BONES = [
-    (0, 1), (0, 2), (1, 3), (2, 4),
-    (0, 5), (0, 6), (5, 7), (7, 9),
-    (6, 8), (8, 10), (5, 6),
-    (5, 11), (6, 12), (11, 12),
-    (11, 13), (13, 15), (12, 14), (14, 16),
-]
 
 _running = True
 def _stop(sig, frame):
     global _running; _running = False
 signal.signal(signal.SIGINT, _stop)
 signal.signal(signal.SIGTERM, _stop)
-
-
-class JointSmoother:
-    """Lightweight per-joint EMA to reduce MoveNet quantisation jitter.
-    Only smooths x, y; confidence is passed through unchanged.
-    alpha=1.0 means no smoothing (raw), lower = more smoothing."""
-    def __init__(self, alpha: float = 0.55):
-        self.alpha = alpha
-        self._prev = None
-
-    def __call__(self, kps: np.ndarray) -> np.ndarray:
-        """kps: (17, 3)  [x_px, y_px, conf]  ->  smoothed copy"""
-        out = kps.copy()
-        if self._prev is None:
-            self._prev = kps[:, :2].copy()
-        else:
-            out[:, :2] = self.alpha * kps[:, :2] + (1 - self.alpha) * self._prev
-            # Only update prev for joints that are actually visible
-            visible = kps[:, 2] > CONF_THR
-            self._prev[visible] = out[visible, :2]
-        return out
-
-    def reset(self):
-        self._prev = None
-
-def draw_skeleton(img, kps):
-    """Draw MoveNet 17-joint skeleton. kps: (17,3) = [x_px, y_px, conf]."""
-    ih, iw = img.shape[:2]
-    def px(i):
-        x, y = int(kps[i, 0]), int(kps[i, 1])
-        return (max(0, min(x, iw-1)), max(0, min(y, ih-1)))
-    for a, b in MOVENET_BONES:
-        if kps[a, 2] > CONF_THR and kps[b, 2] > CONF_THR:
-            cv2.line(img, px(a), px(b), (0, 0, 0), 5)
-            cv2.line(img, px(a), px(b), (255, 255, 255), 2)
-    for j in range(17):
-        if kps[j, 2] > CONF_THR:
-            cv2.circle(img, px(j), 4, (0, 0, 255), -1)
 
 def isData():
     return select.select([sys.stdin], [], [], 0) == ([sys.stdin], [], [])
@@ -179,7 +132,7 @@ def main():
             # Extract skeleton (MoveNet Lightning) + lightweight EMA smoothing
             kps_raw, _, detected = pose.extract(rgb, draw=False)  # (17,3) [x_px, y_px, conf]
             kps = smoother(kps_raw)
-            n_j = int(np.sum(kps[:, 2] > CONF_THR))
+            n_j = int(np.sum(kps[:, 2] > JOINT_CONF_THR))
 
             # Display with scaled keypoints (convert RGB -> BGR for OpenCV)
             disp = cv2.resize(cv2.cvtColor(rgb, cv2.COLOR_RGB2BGR), (W, H))

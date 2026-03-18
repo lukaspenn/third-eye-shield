@@ -7,7 +7,7 @@ impress science fair judges. It walks through each capability of the system
 with on-screen prompts and auto-records each demo segment as a short clip.
 
 Usage (from project root, over SSH):
-    DISPLAY=:0 python3 scripts/science_fair_showcase.py
+    DISPLAY=:0 python3 scripts/demo_showcase.py
 
 SSH Keyboard Controls:
     SPACE / N  = Next scenario step
@@ -31,31 +31,9 @@ import os, sys, signal, time, pickle, collections, select, termios, tty
 from pathlib import Path
 from datetime import datetime
 
-# Kill any previous instance that holds the RealSense camera
-def _kill_previous():
-    my_pid = os.getpid()
-    scripts = ('touchscreen_launcher.py', 'rule_based_demo_depth_overlay.py',
-               'science_fair_showcase.py')
-    import subprocess
-    try:
-        out = subprocess.check_output(['ps', 'aux'], text=True)
-        for line in out.splitlines():
-            if not any(s in line for s in scripts):
-                continue
-            parts = line.split()
-            pid = int(parts[1])
-            if pid == my_pid:
-                continue
-            try:
-                os.kill(pid, signal.SIGTERM)
-                print(f"[INIT] Killed previous instance (PID {pid})")
-                time.sleep(0.5)
-            except ProcessLookupError:
-                pass
-    except Exception:
-        pass
-
-_kill_previous()
+sys.path.append(str(Path(__file__).resolve().parents[1]))
+from src.utils.process import kill_previous_instances
+kill_previous_instances()
 
 import numpy as np
 import cv2
@@ -63,8 +41,9 @@ import yaml
 import tensorflow as tf
 import pyrealsense2 as rs
 
-sys.path.append(str(Path(__file__).resolve().parents[1]))
 from src.utils.kinematics import extract_kinematic_features
+from src.utils.skeleton import MOVENET_BONES, JOINT_CONF_THR, THREAT_ACTIONS, JointSmoother, draw_skeleton
+from src.utils.autoencoder import DepthAutoencoder
 
 _running = True
 def _stop(sig, frame):
@@ -73,12 +52,6 @@ signal.signal(signal.SIGINT, _stop)
 signal.signal(signal.SIGTERM, _stop)
 
 W, H = 800, 480
-JOINT_CONF_THR = 0.25
-MOVENET_BONES = [
-    (0,1),(0,2),(1,3),(2,4),(0,5),(0,6),(5,7),(7,9),
-    (6,8),(8,10),(5,6),(5,11),(6,12),(11,12),(11,13),(13,15),(12,14),(14,16),
-]
-THREAT_ACTIONS = {'punching/slapping', 'pushing other person', 'kicking something', 'falling'}
 
 # ── Scenario steps ────────────────────────────────────────────────────────────
 SCENARIOS = [
@@ -120,48 +93,10 @@ SCENARIOS = [
     },
 ]
 
-class JointSmoother:
-    def __init__(self, alpha=0.55):
-        self.alpha, self._prev = alpha, None
-    def __call__(self, kps):
-        out = kps.copy()
-        if self._prev is None:
-            self._prev = kps[:,:2].copy()
-        else:
-            out[:,:2] = self.alpha*kps[:,:2] + (1-self.alpha)*self._prev
-            vis = kps[:,2] > JOINT_CONF_THR
-            self._prev[vis] = out[vis,:2]
-        return out
-    def reset(self):
-        self._prev = None
-
-def draw_skeleton(img, kps):
-    ih, iw = img.shape[:2]
-    def px(i):
-        x, y = int(kps[i,0]), int(kps[i,1])
-        return (max(0,min(x,iw-1)), max(0,min(y,ih-1)))
-    for a,b in MOVENET_BONES:
-        if kps[a,2]>JOINT_CONF_THR and kps[b,2]>JOINT_CONF_THR:
-            cv2.line(img, px(a), px(b), (0,0,0), 7)
-            cv2.line(img, px(a), px(b), (255,255,255), 3)
-    for j in range(17):
-        if kps[j,2]>JOINT_CONF_THR:
-            p = px(j)
-            r = 8 if j==0 else 5
-            cv2.circle(img, p, r+2, (0,0,0), -1)
-            cv2.circle(img, p, r, (0,0,255), -1)
-
-class AE:
-    def __init__(self, path, size=(64,64)):
-        self.size = size
-        it = tf.lite.Interpreter(model_path=str(path)); it.allocate_tensors()
-        self.it, self.inp, self.out = it, it.get_input_details()[0]['index'], it.get_output_details()[0]['index']
-    def mse(self, raw):
-        d = cv2.resize(raw, self.size, interpolation=cv2.INTER_AREA).astype(np.float32)
-        d = np.clip((d-100)/9900.0, 0, 1)[None,...,None]
-        self.it.set_tensor(self.inp, d); self.it.invoke()
-        rec = self.it.get_tensor(self.out)[0,...,0]
-        return float(np.mean((d[0,...,0]-rec)**2))
+class AE(DepthAutoencoder):
+    """Legacy alias."""
+    def __init__(self, path, size=(64, 64)):
+        super().__init__(path, size)
 
 def ssh_key():
     try:

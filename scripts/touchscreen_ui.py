@@ -4,7 +4,7 @@ Touchscreen Launcher - 800x480 Pi Display  (v2 - premium blue UI)
 Two-mode app: Live Detection + Clips Gallery, controlled by touch.
 
 Usage:
-    DISPLAY=:0 python3 scripts/touchscreen_launcher.py
+    DISPLAY=:0 python3 scripts/touchscreen_ui.py
 
 Touch controls:
     HOME SCREEN:  Tap "LIVE DETECTION" or "CLIPS GALLERY"
@@ -16,31 +16,9 @@ import os, sys, signal, time, pickle, collections, glob
 from pathlib import Path
 from datetime import datetime
 
-# Kill any previous instance that holds the RealSense camera
-def _kill_previous():
-    my_pid = os.getpid()
-    scripts = ('touchscreen_launcher.py', 'rule_based_demo_depth_overlay.py',
-               'science_fair_showcase.py')
-    import subprocess
-    try:
-        out = subprocess.check_output(['ps', 'aux'], text=True)
-        for line in out.splitlines():
-            if not any(s in line for s in scripts):
-                continue
-            parts = line.split()
-            pid = int(parts[1])
-            if pid == my_pid:
-                continue
-            try:
-                os.kill(pid, signal.SIGTERM)
-                print(f"[INIT] Killed previous instance (PID {pid})")
-                time.sleep(0.5)
-            except ProcessLookupError:
-                pass
-    except Exception:
-        pass
-
-_kill_previous()
+sys.path.append(str(Path(__file__).resolve().parents[1]))
+from src.utils.process import kill_previous_instances
+kill_previous_instances()
 
 import numpy as np
 import cv2
@@ -48,8 +26,9 @@ import yaml
 import tensorflow as tf
 import pyrealsense2 as rs
 
-sys.path.append(str(Path(__file__).resolve().parents[1]))
 from src.utils.kinematics import extract_kinematic_features
+from src.utils.skeleton import MOVENET_BONES, JOINT_CONF_THR, THREAT_ACTIONS
+from src.utils.autoencoder import DepthAutoencoder
 
 sys.stdout.reconfigure(line_buffering=True)
 
@@ -60,14 +39,7 @@ signal.signal(signal.SIGINT, _stop)
 signal.signal(signal.SIGTERM, _stop)
 
 W, H = 800, 480
-JOINT_CONF_THR = 0.25
-WIN = 'DepthGuard'
-
-MOVENET_BONES = [
-    (0,1),(0,2),(1,3),(2,4),(0,5),(0,6),(5,7),(7,9),
-    (6,8),(8,10),(5,6),(5,11),(6,12),(11,12),(11,13),(13,15),(12,14),(14,16),
-]
-THREAT_ACTIONS = {'punching/slapping', 'pushing other person', 'kicking something', 'falling'}
+WIN = 'Third Eye Shield'
 
 # ── Blue premium palette (BGR) ────────────────────────────────────────────────
 BG_DARK       = (20, 18, 15)
@@ -142,6 +114,7 @@ def in_rect(x, y, x1, y1, x2, y2):
 
 # ── Model helpers ─────────────────────────────────────────────────────────────
 class JointSmoother:
+    """Local JointSmoother (uses shared JOINT_CONF_THR)."""
     def __init__(self, alpha=0.55):
         self.alpha, self._prev = alpha, None
     def __call__(self, kps):
@@ -156,7 +129,8 @@ class JointSmoother:
     def reset(self):
         self._prev = None
 
-def draw_skeleton(img, kps):
+def draw_skeleton_ui(img, kps):
+    """Draw skeleton with blue premium palette."""
     ih, iw = img.shape[:2]
     def px(i):
         x, y = int(kps[i,0]), int(kps[i,1])
@@ -171,19 +145,10 @@ def draw_skeleton(img, kps):
             cv2.circle(img, p, r+2, (0,0,0), -1)
             cv2.circle(img, p, r, BLUE_PRIMARY, -1)
 
-class AE:
-    def __init__(self, path, size=(64,64)):
-        self.size = size
-        it = tf.lite.Interpreter(model_path=str(path)); it.allocate_tensors()
-        self.it = it
-        self.inp = it.get_input_details()[0]['index']
-        self.out = it.get_output_details()[0]['index']
-    def mse(self, raw):
-        d = cv2.resize(raw, self.size, interpolation=cv2.INTER_AREA).astype(np.float32)
-        d = np.clip((d-100)/9900.0, 0, 1)[None,...,None]
-        self.it.set_tensor(self.inp, d); self.it.invoke()
-        rec = self.it.get_tensor(self.out)[0,...,0]
-        return float(np.mean((d[0,...,0]-rec)**2))
+class AE(DepthAutoencoder):
+    """Legacy alias."""
+    def __init__(self, path, size=(64, 64)):
+        super().__init__(path, size)
 
 
 def get_clip_list(clips_dir):
@@ -572,7 +537,7 @@ def main():
                     kps_d = kps.copy(); kps_d[:,0]*=sx; kps_d[:,1]*=sy
                     n_j = int(np.sum(kps[:,2]>JOINT_CONF_THR))
                     if n_j >= 1:
-                        draw_skeleton(disp, kps_d)
+                        draw_skeleton_ui(disp, kps_d)
                     # Joint-stability gate: skip action when joints are poor or dropping fast
                     joint_stable = (n_j >= 5 and not (prev_n_j >= 5 and n_j < prev_n_j * 0.5))
                     prev_n_j = n_j

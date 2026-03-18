@@ -49,7 +49,7 @@ flask>=3.0.0
 transformers>=4.36.0
 
 # Emotion detection (standalone Mini-Xception TFLite, no extra dependencies)
-# Run: python3 scripts/setup_emotion_model.py  to download and convert model
+# Run: python3 scripts/setup_emotion.py  to download and convert model
 
 # Audio interface (future-ready, optional)
 # pyttsx3>=2.90

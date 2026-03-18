@@ -107,7 +107,7 @@ class EmotionClassifier:
             self._init_tflite_classifier(cls_path)
         else:
             print(f"[EMOTION] Classifier not found: {cls_path}")
-            print("          Run: python3 scripts/setup_emotion_model.py")
+            print("          Run: python3 scripts/setup_emotion.py")
 
         # Init feature extractor
         feat_path = feature_model_path or self.DEFAULT_FEATURES
@@ -115,7 +115,7 @@ class EmotionClassifier:
             self._init_tflite_features(feat_path)
         elif self._classifier is not None:
             print("[EMOTION] Feature model not found -- few-shot disabled")
-            print("          Run: python3 scripts/setup_emotion_model.py")
+            print("          Run: python3 scripts/setup_emotion.py")
 
     # ---- TFLite init --------------------------------------------------
 

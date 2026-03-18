@@ -38,7 +38,6 @@ def load_dataset(data_dir):
         S01_A00_001_kin.npy    (new)
     """
     X, y, names = [], [], []
-    import re
     old_pat = re.compile(r"S(\d+)_C(\d+)_V(\d+)_kin\.npy")
     new_pat = re.compile(r"S(\d+)_A(\d+)_(\d+)_kin\.npy")
     

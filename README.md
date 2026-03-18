@@ -23,7 +23,9 @@ Stage 2: MoveNet Lightning (17-joint skeleton, INT8)
               v  (skeleton available)
 Stage 3: Action Classification + Wellness Computation
          10 actions (RandomForest), posture scoring, sedentary tracking
-         + Optional: Emotion (opt-in) + LLM Companion (remote)
+              |
+              v 
+Stage 4: Emotion Detection (opt-in) + LLM Companion (remote)
 ```
 
 ### Wellness Levels
@@ -33,13 +35,13 @@ Stage 3: Action Classification + Wellness Computation
 | 0     | Active    | Exercising                    | Green    |
 | 1     | Normal    | Daily activity                | Cyan     |
 | 2     | Sedentary | Inactive >30 min              | Orange   |
-| 3     | Concern   | Poor posture / negative emotion | Dark orange |
+| 3     | Concern   | Poor action /negative emotion | Dark orange |
 | 4     | Alert     | Fall detected                 | Red      |
 
 ### Key Features
 
-- **Privacy by Design:** 95% of frames use non-identifiable depth data. Emotion detection opt-in only.
-- **Edge-Deployed:** Runs on Raspberry Pi 4 + Intel RealSense D455 (~S$300 hardware). No cloud dependency.
+- **Privacy by Design:** Most frames use non-identifiable depth data. Emotion detection opt-in only based on user's preference.
+- **Edge-Deployed:** Runs on Raspberry Pi 4. No cloud dependency.
 - **Few-Shot Emotion Personalisation:** Mini-Xception (FER2013, MIT license) with per-user prototypical learning.
 - **LLM Health Companion:** SEA-LION / MERaLiON for multilingual elderly care conversations (EN/ZH/MS/TA).
 - **Telegram Alerts:** Automated family/caregiver notifications on falls and concerns.
@@ -51,7 +53,7 @@ Stage 3: Action Classification + Wellness Computation
 
 - Raspberry Pi 4 (8GB RAM)
 - Intel RealSense D455 depth camera
-- Optional: Google Coral Edge TPU
+- Google Coral Edge TPU
 
 ## Setup
 
@@ -66,8 +68,8 @@ source venv311/bin/activate
 # 3. Install dependencies
 pip install -r requirements.txt
 
-# 4. Set up emotion model (downloads Mini-Xception, converts to TFLite)
-python3 scripts/setup_emotion_model.py
+# 4. Set up emotion model
+python3 scripts/setup_emotion.py
 ```
 
 ## Usage
@@ -82,7 +84,7 @@ python3 scripts/wellness_monitor.py
 
 ```bash
 # 1. Register user (few-shot, ~2 min per user)
-python3 scripts/calibrate_emotions.py --user-id UNCLE_TAN
+python3 scripts/calibrate_emotion.py --user-id UNCLE_TAN
 
 # 2. Run with personalised emotion
 python3 scripts/wellness_monitor.py --enable-emotion --emotion-profile UNCLE_TAN
@@ -129,14 +131,14 @@ python3 scripts/wellness_dashboard.py --date 2026-03-17 --render summary.png
 scripts/
   wellness_monitor.py            # Main wellness monitoring loop
   wellness_dashboard.py          # Daily wellness summary
-  calibrate_emotions.py          # Per-user few-shot emotion registration
-  setup_emotion_model.py         # Download + convert Mini-Xception to TFLite
+  calibrate_emotion.py           # Per-user few-shot emotion registration
+  setup_emotion.py               # Download + convert Mini-Xception to TFLite
   collect_action_data.py         # Collect training data for action classifier
   train_action_classifier.py     # Train RandomForest action model
-  science_fair_showcase.py       # Guided demo for competition showcase
-  touchscreen_launcher.py        # Touchscreen UI launcher
-  rule_based_demo_depth_overlay.py  # Simple depth + skeleton demo
-  capture_single_sequence.py     # Quick skeleton capture utility
+  demo_showcase.py               # Guided demo for competition showcase
+  touchscreen_ui.py              # Touchscreen UI launcher (800x480 display)
+  demo_depth.py                  # Depth + skeleton demo with rule overlay
+  capture_sequence.py            # Quick skeleton capture utility
 
 models/
   emotion_classifier.py          # Emotion classifier with few-shot personalisation
@@ -148,11 +150,13 @@ src/
   telegram_notifier.py           # Telegram family alerts
   audio_interface.py             # Voice I/O abstraction (future-ready)
   utils/
+    skeleton.py                  # Shared skeleton constants and drawing utilities
+    autoencoder.py               # Shared TFLite depth autoencoder wrapper
+    process.py                   # Process management (camera contention)
     wellness_features.py         # Posture, sedentary, wellness level computation
     kinematics.py                # Kinematic feature extraction
 
 config.yaml                      # Full system configuration
-SUBMISSION.md                    # Competition deliverable (summary + privacy plan)
 ```
 
 ---
@@ -160,13 +164,11 @@ SUBMISSION.md                    # Competition deliverable (summary + privacy pl
 ## Privacy Design
 
 1. **Depth-first:** 95% of processing uses non-identifiable depth maps.
-2. **Skeleton only:** RGB is used transiently for pose extraction -- never stored.
+2. **Skeleton only:** RGB is used transiently for pose extraction and never stored.
 3. **Emotion opt-in:** Off by default. Face crops exist in memory only (48x48 greyscale), never saved to disk.
 4. **Data minimisation:** Only derived metrics logged (scores, labels, timestamps). No raw sensor data.
 5. **Edge processing:** All core monitoring runs on-device. No cloud dependency.
 6. **PDPA-aligned:** Informed consent, purpose limitation, right to delete.
-
-See [SUBMISSION.md](SUBMISSION.md) for the full data handling and privacy plan.
 
 ---
 
@@ -174,15 +176,9 @@ See [SUBMISSION.md](SUBMISSION.md) for the full data handling and privacy plan.
 
 Third Eye Shield uses an open-source Mini-Xception model (~60K parameters, MIT license) pre-trained on FER2013, with per-user prototypical few-shot learning:
 
-1. **Setup:** `setup_emotion_model.py` downloads the model and converts to two TFLite models (classifier + 128-dim feature extractor).
-2. **Registration:** `calibrate_emotions.py` captures face samples per emotion, extracts 128-dim embeddings, stores as user profiles (.npz).
+1. **Setup:** `setup_emotion.py` downloads the model and converts to two TFLite models (classifier + 128-dim feature extractor).
+2. **Registration:** `calibrate_emotion.py` captures face samples per emotion, extracts 128-dim embeddings, stores as user profiles (.npz).
 3. **Inference:** Classify by cosine similarity to user prototypes (60% few-shot + 40% base model blending).
-
----
-
-## Competition Submission
-
-See [SUBMISSION.md](SUBMISSION.md) for the full competition deliverable including executive summary, presentation outline, and data handling & privacy plan.
 
 ---
 

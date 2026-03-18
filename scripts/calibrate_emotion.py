@@ -11,12 +11,12 @@ to 128-dim embeddings and stored as the user's emotion profile. At inference
 time, new faces are classified by cosine similarity to these prototypes.
 
 Usage:
-    python3 scripts/calibrate_emotions.py --user-id UNCLE_TAN
-    python3 scripts/calibrate_emotions.py --user-id UNCLE_TAN --samples 15
-    python3 scripts/calibrate_emotions.py --user-id UNCLE_TAN --add happy
+    python3 scripts/calibrate_emotion.py --user-id UNCLE_TAN
+    python3 scripts/calibrate_emotion.py --user-id UNCLE_TAN --samples 15
+    python3 scripts/calibrate_emotion.py --user-id UNCLE_TAN --add happy
                                           # add more samples for one emotion
 
-Requires: Run setup_emotion_model.py first to create TFLite models.
+Requires: Run setup_emotion.py first to create TFLite models.
 """
 import os, sys, signal, time, argparse, select, termios, tty
 from pathlib import Path
@@ -98,7 +98,7 @@ def main():
 
     if emotion_clf._feat_extractor is None:
         print("[ERROR] Feature extractor not available.")
-        print("        Run: python3 scripts/setup_emotion_model.py")
+        print("        Run: python3 scripts/setup_emotion.py")
         sys.exit(1)
 
     # Load existing profile if adding to it
@@ -281,7 +281,7 @@ def main():
             print(f"    python3 scripts/wellness_monitor.py "
                   f"--enable-emotion --emotion-profile {user_id}")
             print(f"\n  To add more samples later:")
-            print(f"    python3 scripts/calibrate_emotions.py "
+            print(f"    python3 scripts/calibrate_emotion.py "
                   f"--user-id {user_id} --add happy")
         else:
             print("\n[WARN] No samples registered.")

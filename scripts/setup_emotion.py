@@ -16,8 +16,8 @@ Dataset: FER2013 (7 emotions, ~35K images, 48x48 grayscale)
 Architecture: Mini-Xception (~60K params, <1MB)
 
 Usage:
-    python3 scripts/setup_emotion_model.py
-    python3 scripts/setup_emotion_model.py --force   # re-download
+    python3 scripts/setup_emotion.py
+    python3 scripts/setup_emotion.py --force   # re-download
 """
 import os
 import sys
@@ -276,7 +276,7 @@ def main():
     print("")
     print("  Next steps:")
     print("    1. Register a user:")
-    print("       python3 scripts/calibrate_emotions.py --user-id UNCLE_TAN")
+    print("       python3 scripts/calibrate_emotion.py --user-id UNCLE_TAN")
     print("    2. Run with emotion:")
     print("       python3 scripts/wellness_monitor.py --enable-emotion \\")
     print("           --emotion-profile UNCLE_TAN")
