@@ -1,0 +1,269 @@
+# DepthAutoencoder-AnomalyDetection Configuration File
+# Experiment Settings for Hybrid Threat Detection System
+
+# ==========================================================================
+# THIRD EYE SHIELD WELLNESS MONITORING
+# ==========================================================================
+# ============================================================================
+# THIRD EYE SHIELD WELLNESS MONITORING
+# ============================================================================
+  version: "1.0"
+  date: "2025-01-01"
+
+# ============================================================================
+# CAMERA SETTINGS
+# ============================================================================
+camera:
+  device_serial: "241122305340"  # RealSense D455 serial number
+  fps: 30
+  width: 848
+  height: 480
+  enable_rgb: true
+  enable_depth: true
+  depth_min_distance: 0.3  # meters
+  depth_max_distance: 3.0  # meters
+
+# ============================================================================
+# STAGE 1: DEPTH AUTOENCODER
+# ============================================================================
+stage1:
+  enabled: true
+  model_path: "models/depth_autoencoder_full.tflite"
+  
+  # Anomaly detection thresholds
+  reconstruction_threshold: 0.450  # MSE threshold - anomaly when mse < threshold
+  adaptive_threshold: false  # Use adaptive thresholding based on history
+  
+  # Preprocessing
+  input_size: [64, 64]  # Model input dimensions
+  normalize: true
+  
+  # Performance
+  batch_size: 1
+  target_latency_ms: 50
+
+# ============================================================================
+# STAGE 2: POINTNET HUMAN DETECTION
+# ============================================================================
+stage2:
+  enabled: true
+  model_path: "models/pointnet_human_512_int8.tflite"
+  
+  # Point cloud processing
+  num_points: 512  # Number of points to sample
+  voxel_size: 0.02  # meters
+  
+  # Detection thresholds
+  confidence_threshold: 0.5  # Human detection confidence
+  min_points: 100  # Minimum points to attempt detection
+  
+  # Privacy filters
+  enable_privacy_filter: false  # Remove identifying features
+  filter_face: false
+  filter_body_details: false
+  
+  # Performance
+  target_latency_ms: 100
+
+# ============================================================================
+# STAGE 3: POSE + ACTION RECOGNITION (MoveNet + EfficientGCN)
+# ============================================================================
+stage3:
+  enabled: false  # Disable by default (computationally expensive)
+  
+  # Pose detection (MoveNet SinglePose Lightning int8 + depth-ROI for person isolation)
+  pose_model_path: "models/movenet_lightning_int8.tflite"
+  pose_confidence_threshold: 0.25
+  
+  # Action recognition (EfficientGCN)
+  action_model_path: "models/2019_EfficientGCN-B2_ntu-xsub120.pth.tar"
+  action_model_type: "efficientgcn"  # or "custom"
+  num_classes: 120  # NTU RGB+D 120 classes
+  
+  # Threat detection
+  threat_classes:
+    # Aggressive actions (class IDs from NTU-120 dataset)
+    - 95   # punch/slap
+    - 96   # kicking
+    - 97   # pushing
+    - 100  # hit with object
+  
+  confidence_threshold: 0.6  # Threat classification confidence
+  
+  # Temporal sequence
+  sequence_length: 30  # Number of frames for action recognition
+  overlap: 15  # Frame overlap between sequences
+  
+  # Performance
+  target_latency_ms: 200
+
+# ============================================================================
+# LOGGING & RECORDING
+# ============================================================================
+logging:
+  # Log levels: DEBUG, INFO, WARNING, ERROR, CRITICAL
+  level: "INFO"
+  
+  # Output destinations
+  console: true
+  file: true
+  log_dir: "logs"
+  log_filename: "detection_{timestamp}.log"
+  
+  # Detection CSV logging
+  csv_logging: true
+  csv_dir: "logs/detections"
+  csv_filename: "detection_{timestamp}.csv"
+  
+  # Video recording
+  video_recording: false  # Enable manual recording only
+  video_dir: "logs/videos"
+  video_filename: "recording_{timestamp}.mp4"
+  video_fps: 20
+  video_codec: "mp4v"
+  
+  # Performance logging
+  log_fps: true
+  log_latency: true
+  log_detections: true
+
+# ============================================================================
+# VISUALIZATION & DASHBOARD
+# ============================================================================
+visualization:
+  # Dashboard layout
+  dashboard_enabled: false  # Run headless by default
+  window_width: 1920
+  window_height: 1080
+  
+  # Panels to display
+  show_depth: true
+  show_rgb: true
+  show_heatmap: true  # Autoencoder reconstruction error heatmap
+  show_metrics: true
+  show_detection_output: true
+  
+  # Annotations
+  draw_bounding_boxes: true
+  draw_skeleton: true
+  draw_confidence: true
+  
+  # Colors (BGR format)
+  color_normal: [0, 255, 0]      # Green
+  color_anomaly: [0, 165, 255]   # Orange
+  color_threat: [0, 0, 255]      # Red
+
+# ============================================================================
+# PERFORMANCE & OPTIMIZATION
+# ============================================================================
+performance:
+  # Threading
+  use_threading: true
+  thread_pool_size: 4
+  
+  # Frame skipping
+  enable_frame_skip: false
+  max_frame_skip: 2  # Skip at most 2 frames if processing is slow
+  
+  # Queue sizes
+  frame_queue_size: 5
+  detection_queue_size: 10
+  
+  # Benchmarking
+  benchmark_mode: false  # Run fixed number of frames and exit
+  benchmark_frames: 100
+
+# ============================================================================
+# ALERTS & NOTIFICATIONS
+# ============================================================================
+alerts:
+  # Alert triggers
+  enable_alerts: false
+  alert_on_stage1: false  # Depth anomaly
+  alert_on_stage2: true   # Human detected
+  alert_on_stage3: true   # Threat detected
+  
+  # Alert methods
+  console_alert: true
+  log_alert: true
+  sound_alert: false  # Requires audio hardware
+  
+  # Cooldown to prevent alert spam
+  alert_cooldown_sec: 5.0
+
+# ============================================================================
+# EXPERIMENTAL FEATURES
+# ============================================================================
+experimental:
+  # Auto-tuning (automatically adjust thresholds based on data)
+  auto_tune_thresholds: false
+  auto_tune_window: 1000  # frames
+  
+  # Multi-camera support
+  multi_camera: false
+  camera_ids: ["241122305340"]
+  
+  # Remote monitoring
+  enable_remote_api: false
+  api_port: 8080
+  
+  # Model hot-swapping
+  allow_model_reload: false
+
+# ============================================================================
+# THIRD EYE SHIELD WELLNESS MONITORING
+# ============================================================================
+wellness:
+  # Product branding
+  product_name: "Third Eye Shield"
+
+  # Posture scoring
+  posture:
+    enabled: true
+    ema_alpha: 0.15           # smoothing factor (lower = more smoothing)
+    good_threshold: 65        # score >= this = good posture
+    poor_threshold: 35        # score < this = concern trigger
+
+  # Sedentary behaviour tracking
+  sedentary:
+    enabled: true
+    threshold_minutes: 30     # alert after this many minutes inactive
+    motion_energy_threshold: 0.02  # min motion energy to count as active
+
+  # Emotion detection — OPT-IN ONLY (off by default for privacy)
+  emotion:
+    enabled: false            # must be explicitly enabled by user
+    model_path: "models/emotion_fer2013.tflite"         # classifier TFLite
+    feature_model_path: "models/emotion_fer2013_features.tflite"  # feature extractor
+    profiles_dir: "data/emotion_profiles"   # per-user few-shot profiles (.npz)
+    confidence_threshold: 0.35
+    negative_window_sec: 300  # rolling window for prolonged negative emotion check
+    negative_ratio: 0.6       # fraction of window that must be negative to trigger
+
+  # LLM companion
+  llm:
+    enabled: false
+    endpoint: ""              # Optional HTTP endpoint (e.g. http://192.168.1.100:5000/chat)
+    model: "aisingapore/llama-3-8b-cpt-sea-lionv3-instruct"  # SEA-LION recommended
+    checkin_interval_sec: 7200  # proactive check-in every 2 hours
+    message_display_sec: 15     # how long to show LLM message on HUD
+
+  # Audio interface (future-ready)
+  audio:
+    enabled: false
+    stt_model: "base"         # Whisper model size: tiny, base, small
+    tts_engine: "pyttsx3"     # pyttsx3 (offline) or gtts (online)
+    language: "en"
+
+  # Telegram notifications to family/caregivers
+  telegram:
+    enabled: false
+    bot_token: ""             # Optional. Prefer env var TELEGRAM_BOT_TOKEN in production
+    chat_ids: []               # Optional. Prefer env var TELEGRAM_CHAT_IDS="id1,id2"
+    cooldown_sec: 60          # Min seconds between same-type alerts
+    send_daily_summary: true  # Send daily wellness report at end of day
+
+  # Wellness event logging
+  logging:
+    log_dir: "logs/wellness"
+    alert_cooldown_sec: 5.0

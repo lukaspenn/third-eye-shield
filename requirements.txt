@@ -1,0 +1,64 @@
+# Depth Autoencoder Anomaly Detection + Threat Detection
+# ========================================================
+# Hybrid system requirements for Raspberry Pi 4/5
+# Python 3.9+ required
+
+# Core ML Frameworks
+numpy>=1.23.5
+tensorflow>=2.12.0
+torch>=2.1.0
+torchvision>=0.14.0
+scikit-learn>=1.3.0
+scikit-image>=0.21.0
+
+# Computer Vision
+opencv-python>=4.8.0.76
+mediapipe>=0.10.9
+pyrealsense2>=2.54.1
+
+# Optional: Edge TPU acceleration (install separately)
+# pycoral  # Install via: pip install --extra-index-url https://google-coral.github.io/py-repo/ pycoral
+
+# Optional: Performance monitoring
+# psutil>=5.9.6
+
+# Notes:
+# ------
+# 1. PyTorch on Pi 4: Use torch 2.1.0 for best compatibility
+#    Install: pip install torch==2.1.0 torchvision==0.14.0
+#
+# 2. MediaPipe requires 64-bit Raspberry Pi OS
+#    Check: uname -m  (should show aarch64)
+#
+# 3. pyrealsense2: Official Intel RealSense SDK
+#    Alternative: sudo apt install python3-pyrealsense2
+#
+# 4. For Edge TPU support (optional but recommended):
+#    See tools/setup_hybrid_system.sh for automated setup
+#
+# 5. Memory requirements:
+#    - Autoencoder only: 2GB RAM sufficient
+#    - + Pose + Skeleton action: 4GB+ RAM recommended
+
+# ============================================================
+# Third Eye Shield Wellness Extensions
+# ============================================================
+
+# LLM Companion server (runs on laptop, not RPi)
+flask>=3.0.0
+transformers>=4.36.0
+
+# Emotion detection (standalone Mini-Xception TFLite, no extra dependencies)
+# Run: python3 scripts/setup_emotion_model.py  to download and convert model
+
+# Audio interface (future-ready, optional)
+# pyttsx3>=2.90
+# gTTS>=2.3.0
+# openai-whisper>=20230918
+# sounddevice>=0.4.6
+# soundfile>=0.12.1
+
+# Notes (Third Eye Shield additions):
+# - flask + transformers: Only needed on the laptop running the LLM server
+# - fer: Lightweight emotion classifier, needed only if emotion opt-in enabled
+# - Audio packages: Uncomment when microphone is available
