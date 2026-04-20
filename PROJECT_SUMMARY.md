@@ -1,4 +1,4 @@
-# 🚀 DEMENTIA CARE MONITORING SYSTEM - DELIVERY COMPLETE
+# DEMENTIA CARE MONITORING SYSTEM - DELIVERY COMPLETE
 
 ## Privacy-Preserving Activity Monitoring with EfficientGCN
 ### Complete Training Pipeline for Compassionate Elderly Care
@@ -66,7 +66,6 @@
 ### Utilities
 - ✅ **Joint Mapping** (`utils/joint_mapping.py`)
   - MoveNet (17 joints) → NTU (25 joints)
-  - BlazePose (33 joints) → NTU (25 joints)
   - Temporal padding/cropping
   - Skeleton normalization
 
@@ -123,7 +122,7 @@
 
 ---
 
-## 📊 TECHNICAL SPECIFICATIONS
+## TECHNICAL SPECIFICATIONS
 
 ### Model Architecture
 ```
@@ -145,17 +144,6 @@ Input: (N, 3, 300, 25, 1)
 └── Fully Connected: 256 → 60 classes
 Output: (N, 60)
 ```
-
-### Performance Metrics
-- **Accuracy Target:** ≥85% on NTU RGB+D xsub/xview
-- **Model Size:** <5MB (FP32), <1MB (INT8)
-- **Parameters:** ~500K-1M
-- **Inference Time:**
-  - Laptop (RTX 3060, ONNX): <10ms
-  - Raspberry Pi 4 (CPU): ~200ms
-  - Raspberry Pi 4 + Coral TPU: <50ms ✓
-- **Memory:** ~100-150MB runtime
-
 ### Dataset Support
 - **NTU RGB+D 60:** 60 classes, 56,880 samples
 - **NTU RGB+D 120:** 120 classes, 114,480 samples
@@ -269,16 +257,6 @@ augmentation:
   random_scale: [0.9, 1.1]
   temporal_crop: true
   spatial_dropout: 0.1
-```
-
-### Expected Training Progress
-```
-Epoch 1:  Train Loss: 3.52 | Train Acc: 15.2% | Val Acc: 18.5%
-Epoch 10: Train Loss: 1.24 | Train Acc: 62.8% | Val Acc: 58.3%
-Epoch 20: Train Loss: 0.68 | Train Acc: 78.5% | Val Acc: 72.1%
-Epoch 40: Train Loss: 0.32 | Train Acc: 89.2% | Val Acc: 82.5%
-Epoch 60: Train Loss: 0.18 | Train Acc: 94.1% | Val Acc: 85.3%
-Epoch 80: Train Loss: 0.12 | Train Acc: 96.2% | Val Acc: 86.7% ✓
 ```
 
 ### Hyperparameter Tuning Tips
