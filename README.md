@@ -1,12 +1,35 @@
-# Third Eye Shield - AI-Powered Dementia Care Solution
+# Third Eye Shield - AI-Powered Dementia Care Solution (by Ocean 3)
 
-> **Singapore Dementia Care AI Competition Submission** - Privacy-preserving activity monitoring for elderly individuals with dementia using Graph Neural Networks and depth-only skeleton data.
+> **NAISC Healthcare Challenge Track** - Privacy-preserving activity monitoring for elderly individuals with dementia using Graph Neural Networks and depth-only skeleton data.
+
+## 👥 Team & Impact
+
+### Our Team
+- **Students**: 3 Junior College students collaborated with other students from Malaysia under another team called Teh Tarik Tech. From then, 3 of us formed another team called Ocean 3 to further develop the system and participate in NAISC
+- **Background**: Passionate about using AI and computing for social good
+- **Focus**: Combining technical innovation with compassionate care, especially in smart monitoring devices
+
+### Impact on Singapore
+- **Early Detection**: Helps identify dementia symptoms before crises via pattern recognition
+- **Family Support**: Reduces caregiver burden through smart monitoring
+- **Dignity**: Allows elderly to maintain independence longer, enabling them more
+- **Healthcare**: Integrates with Singapore's healthcare ecosystem
+- **Community**: Fosters dementia-friendly neighborhoods by providing piece of mind to patients' family members
+
+### Challenges Faced
+- **Technical**: Optimizing GCN for edge devices while maintaining accuracy
+- **Ethical**: Balancing monitoring needs with privacy rights
+- **Cultural**: Adapting to Singapore's family caregiving culture
+- **Dataset**: Finding appropriate training data for dementia behaviors
+
+### Reflections
+This project taught us that AI in healthcare must prioritize humanity before business and finance. While technical challenges were significant, the most important lessons were about empathy, cultural sensitivity, and the balance between care and dignity. We learned that successful AI solutions require deep understanding of the human context they're meant to serve.
 
 ---
 
 ## 🎯 Competition Overview
 
-This project is our submission for the **Singapore Dementia Care AI Competition** (2026), addressing the growing challenge of dementia care in Singapore's ageing population. By 2030, Singapore could have over 150,000 people living with dementia, creating urgent needs for innovative AI solutions that support dignity, safety, and family caregiving.
+This project is our submission for the **NAISC Healthcare Challenge Track** (2026), addressing the growing challenge of dementia care in Singapore's ageing population. By 2030, Singapore could have over 150,000 people living with dementia, creating urgent needs for innovative AI solutions that support dignity, safety, and family caregiving.
 
 ### Our Solution: Third Eye Shield
 
@@ -21,32 +44,7 @@ Third Eye Shield is a compassionate AI system that monitors daily activities of 
 
 ---
 
-## 📋 Competition Requirements Met
 
-### ✅ AI-Powered Detection & Monitoring
-- **Pattern Recognition**: Identifies dementia-related behaviors (wandering, confusion, agitation)
-- **Risk Detection**: Early warning for falls, prolonged inactivity, repetitive behaviors
-- **Safety Interventions**: Alerts caregivers when intervention is needed
-
-### ✅ Practical Tools for Caregivers & Families
-- **Real-Time Monitoring**: Continuous activity tracking without constant supervision
-- **Family Alerts**: SMS/Telegram notifications in English, Mandarin, Malay, Tamil
-- **Care History**: Logs activity patterns to help understand care needs
-- **Dignity Preservation**: Respects elderly privacy and independence
-
-### ✅ Singapore Context Integration
-- **Ageing Population**: Designed for Singapore's demographic challenges
-- **Family-Based Caregiving**: Supports multi-generational family structures
-- **Multilingual**: Interfaces available in Singapore's 4 official languages
-- **Cultural Sensitivity**: Respects Asian cultural values around elderly care
-- **Cost-Effective**: Uses affordable hardware for widespread adoption
-
-### ✅ Bonus: Predictive Analytics & Dataset Mining
-- **Dataset Integration**: Leverages NTU RGB+D dataset for robust training
-- **Predictive Patterns**: Analyzes activity sequences for early dementia indicators
-- **Confidence Thresholds**: Adaptive alerting based on detection confidence
-
----
 
 ## 🏗️ System Architecture
 
@@ -117,7 +115,7 @@ python deployment/care_monitor.py
 ### Model Details
 - **Architecture**: EfficientGCN-Lite with spatial-temporal graph convolutions
 - **Dataset**: NTU RGB+D (56,880 samples, 60 action classes)
-- **Accuracy**: ≥85% on cross-subject validation
+- **Accuracy**: 83% on cross-subject validation
 - **Inference**: <50ms on Coral Edge TPU
 - **Model Size**: <1MB (INT8 quantized)
 
@@ -131,31 +129,6 @@ python deployment/care_monitor.py
 - **RGB Triggered**: Visual recording only for verified care needs
 - **Data Local**: No cloud upload, all processing on-device
 - **Opt-In**: Family consent required for all monitoring
-
----
-
-## 👥 Team & Impact
-
-### Our Team
-- **Students**: Integrated Programme / Junior College level
-- **Background**: Passionate about using AI for social good
-- **Focus**: Combining technical innovation with compassionate care
-
-### Impact on Singapore
-- **Early Detection**: Helps identify dementia symptoms before crises
-- **Family Support**: Reduces caregiver burden through smart monitoring
-- **Dignity**: Allows elderly to maintain independence longer
-- **Healthcare**: Integrates with SG healthcare ecosystem
-- **Community**: Fosters dementia-friendly neighborhoods
-
-### Challenges Faced
-- **Technical**: Optimizing GCN for edge devices while maintaining accuracy
-- **Ethical**: Balancing monitoring needs with privacy rights
-- **Cultural**: Adapting to Singapore's family caregiving culture
-- **Dataset**: Finding appropriate training data for dementia behaviors
-
-### Reflections
-This project taught us that AI in healthcare must prioritize humanity. While technical challenges were significant, the most important lessons were about empathy, cultural sensitivity, and the balance between care and dignity. We learned that successful AI solutions require deep understanding of the human context they're meant to serve.
 
 ---
 
