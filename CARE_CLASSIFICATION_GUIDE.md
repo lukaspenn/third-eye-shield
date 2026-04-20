@@ -11,9 +11,9 @@ This guide explains how to use the **5-level care classification** system for yo
 ### Level 0: Normal Daily Activities ✅
 **Examples**: brushing teeth, drinking water, eating, reading, writing, using phone/tablet, sitting, standing, walking, waving, clapping, exercising
 
-**Interpretation**: Routine personal or social behavior; baseline "normal" activities
+**What it means**: These are everyday activities that show someone is going about their normal routine. No cause for concern here.
 
-**Response**: No action required - privacy maintained
+**What we do**: We keep monitoring quietly in the background. No alerts needed.
 
 **RGB Trigger**: ❌ No
 
@@ -22,9 +22,9 @@ This guide explains how to use the **5-level care classification** system for yo
 ### Level 1: Mild Changes / Monitoring ⚠️
 **Examples**: bending to pick object, carrying object, moving chair, cleaning floor, lying down, running, moving quickly
 
-**Interpretation**: Slight deviations from routine (e.g., office running = potential confusion)
+**What it means**: These could be slight changes from normal routine. Sometimes it's nothing, but other times it might be early signs of confusion or just being busy.
 
-**Response**: Log activity - Gentle monitoring for patterns
+**What we do**: We make a note of it and keep watching. No immediate action, but we track patterns.
 
 **RGB Trigger**: ❌ No (monitoring only)
 
@@ -33,9 +33,9 @@ This guide explains how to use the **5-level care classification** system for yo
 ### Level 2: Moderate Care Needs 🟡
 **Examples**: reaching into pocket/bag, sneaking, peeking, entering restricted area, hiding object, taking something from another person, suspicious handling
 
-**Interpretation**: May indicate early confusion, wandering, or safety concerns
+**What it means**: This might indicate some confusion, wandering tendencies, or situations where they could use some gentle help.
 
-**Response**: Alert family caregiver - Record depth + skeleton for review
+**What we do**: We send a quiet alert to family caregivers so they can check in. We also start recording a bit more detail for review.
 
 **RGB Trigger**: ✅ Yes (Low Priority) - if confidence > 77%
 
@@ -44,9 +44,9 @@ This guide explains how to use the **5-level care classification** system for yo
 ### Level 3: Significant Care Support 🔴
 **Examples**: pushing, pulling, hitting with object, slapping, kicking someone, throwing object at person, fighting, aggressive pointing/yelling, shoving, dragging
 
-**Interpretation**: Strong indicators of agitation, distress, or interpersonal issues
+**What it means**: These are signs of agitation, distress, or situations where someone needs immediate emotional or physical support.
 
-**Response**: Immediate family alert - High priority support needed
+**What we do**: We alert family right away for immediate support. This is important for preventing bigger issues.
 
 **RGB Trigger**: ✅✅ Yes (High Priority) - if confidence > 70%
 
@@ -55,9 +55,9 @@ This guide explains how to use the **5-level care classification** system for yo
 ### Level 4: Critical Medical Emergency 🚨
 **Examples**: wielding knife/gun, stabbing, shooting, choking, strangling, collapsing/falling suddenly, fainting, chest-pain gesture, medical distress
 
-**Interpretation**: Life-threatening or emergency situations requiring immediate attention
+**What it means**: These are serious emergency situations that need immediate professional help.
 
-**Response**: IMMEDIATE alert + RGB + emergency services + family notification
+**What we do**: IMMEDIATE alert to family + emergency services + caregivers. We also trigger any visual recording if needed for medical response.
 
 **RGB Trigger**: ✅✅✅ YES (CRITICAL) - if confidence > 56%
 
