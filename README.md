@@ -1,8 +1,6 @@
-# Third Eye Shield - Privacy-Preserving AI for Multimodal Remote Elderly Wellness Monitoring
+# Third Eye Shield - Privacy-Preserving AI for Remote Elderly Wellness Monitoring
 
 > Depth-first, edge-deployed, multilingual wellness monitor for elderly individuals living alone in Singapore.
-
-**Competition:** AI for Multimodal Remote Health and Wellness Monitoring (Problem Statement 2)
 
 ---
 
@@ -22,7 +20,7 @@ Stage 2: MoveNet Lightning (17-joint skeleton, INT8)
               |
               v  (skeleton available)
 Stage 3: Action Classification + Wellness Computation
-         10 actions (RandomForest), posture scoring, sedentary tracking
+         10 actions, posture scoring, sedentary tracking
               |
               v 
 Stage 4: Emotion Detection (opt-in) + LLM Companion (remote)
@@ -164,7 +162,7 @@ config.yaml                      # Full system configuration
 ## Privacy Design
 
 1. **Depth-first:** 95% of processing uses non-identifiable depth maps.
-2. **Skeleton only:** RGB is used transiently for pose extraction and never stored.
+2. **Skeleton only:** RGB is used transiently for pose extraction and never stored or transferred.
 3. **Emotion opt-in:** Off by default. Face crops exist in memory only (48x48 greyscale), never saved to disk.
 4. **Data minimisation:** Only derived metrics logged (scores, labels, timestamps). No raw sensor data.
 5. **Edge processing:** All core monitoring runs on-device. No cloud dependency.
