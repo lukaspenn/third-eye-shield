@@ -1,11 +1,9 @@
-# Third Eye Shield - AI-Powered Dementia Care Solution (by Ocean 3)
-
-> **NAISC Healthcare Challenge Track** - Privacy-preserving activity monitoring for elderly individuals with dementia using Graph Neural Networks and depth-only skeleton data.
+# Third Eye Shield - AI-Powered Dementia Care Solution (by Nguyen Chi Kien, Khor Ize, Ng Wei En Enzo)
 
 ## 👥 Team & Impact
 
 ### Our Team
-- **Students**: 3 Junior College students collaborated with other students from Malaysia under another team called Teh Tarik Tech. From then, 3 of us formed another team called Ocean 3 to further develop the system and participate in NAISC
+- **Students**: 3 Junior College students collaborated with other students from Malaysia under another team called Teh Tarik Tech. From then, 3 of us formed another team called Ocean 3 to further develop the system.
 - **Background**: Passionate about using AI and computing for social good
 - **Focus**: Combining technical innovation with compassionate care, especially in smart monitoring devices
 
@@ -26,10 +24,6 @@
 This project taught us that AI in healthcare must prioritize humanity before business and finance. While technical challenges were significant, the most important lessons were about empathy, cultural sensitivity, and the balance between care and dignity. We learned that successful AI solutions require deep understanding of the human context they're meant to serve.
 
 ---
-
-## 🎯 Competition Overview
-
-This project is our submission for the **NAISC Healthcare Challenge Track** (2026), addressing the growing challenge of dementia care in Singapore's ageing population. By 2030, Singapore could have over 150,000 people living with dementia, creating urgent needs for innovative AI solutions that support dignity, safety, and family caregiving.
 
 ### Our Solution: Third Eye Shield
 
